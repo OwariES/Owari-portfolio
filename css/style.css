@@ -308,23 +308,29 @@ a.chip { display: inline-block; text-decoration: none; }
    - Cambia el archivo de img/deco/ por el tuyo (con el mismo nombre).
    - Ajusta aquí el ancho máximo (--deco-w), la altura a la que empieza
      (--deco-top, desde el borde superior de su sección) y la opacidad.
+   - --deco-x (opcional): mueve la imagen en horizontal. Negativo = a la izquierda, positivo = a la derecha.
+     Mejor no pasar de ±30px para que no se acerque al contenido.
+   - --deco-maxh (opcional): altura máxima. Si no la pones, la imagen no pasa de la altura de su sección.
    - Solo se ven si hay sitio a los lados: nunca se superponen al contenido.
    - Si tu PNG es pixel art, añade la clase "pixel" a su <img> en index.html.
    ============================================================ */
 .deco-proyectos { --deco-w: 260px; --deco-top: 4rem; --deco-opacity: 1; }
-.deco-skins     { --deco-w: 240px; --deco-top: 3rem; --deco-opacity: 1; }
-.deco-sobremi   { --deco-w: 260px; --deco-top: 4rem; --deco-opacity: 1; }
+.deco-skins     { --deco-w: 400px; --deco-top: 3rem; --deco-maxh: 900px; --deco-x: -32px; --deco-opacity: 1; }
+.deco-sobremi   { --deco-w: 400px; --deco-top: 9rem; --deco-maxh: 640px; --deco-x: 24px; --deco-opacity: 1; }
 
 .has-deco { position: relative; }
 .side-deco {
   position: absolute; top: var(--deco-top, 4rem); z-index: 0;
-  width: min(var(--deco-w, 260px), calc((100vw - 100%) / 2 - 40px));
-  height: auto; max-height: calc(100% - var(--deco-top, 4rem) - 1rem);
+  height: auto; max-height: var(--deco-maxh, calc(100% - var(--deco-top, 4rem) - 1rem));
   object-fit: contain; opacity: var(--deco-opacity, 1);
+  transform: translateX(var(--deco-x, 0px));
   pointer-events: none; user-select: none; -webkit-user-drag: none;
 }
-.side-deco--left  { right: 100%; margin-right: 16px; object-position: right top; }
-.side-deco--right { left: 100%;  margin-left: 16px;  object-position: left top; }
+/* El ancho es el de --deco-w mientras quepa en el margen; si no cabe, se reduce solo */
+.side-deco--left  { right: 100%; margin-right: 16px; object-position: right top;
+                    width: min(var(--deco-w, 260px), calc((100vw - 100%) / 2 - 32px + var(--deco-x, 0px))); }
+.side-deco--right { left: 100%;  margin-left: 16px;  object-position: left top;
+                    width: min(var(--deco-w, 260px), calc((100vw - 100%) / 2 - 32px - var(--deco-x, 0px))); }
 .side-deco.pixel { image-rendering: pixelated; }
 @media (max-width: 1479px) { .side-deco { display: none; } }
 
