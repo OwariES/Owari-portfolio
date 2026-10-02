@@ -14,7 +14,7 @@ const SKIN_PAGE_SIZE = 12; // cuántas se ven de golpe; "Ver más" añade otras 
 
 const skins = [
   { name: "Meica navideña", file: "skins/Meica.png", version: "clasica",
-    desc: "Sustituye este archivo por tu propia skin." },
+    desc: "Skin hecha para Meica." },
 
     { name: "Punkpup", file: "skins/punkpup.png", version: "clasica",
       desc: "Sustituye este archivo por tu propia skin." },
