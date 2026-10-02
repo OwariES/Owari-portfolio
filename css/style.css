@@ -361,3 +361,181 @@ a.chip { display: inline-block; text-decoration: none; }
   99.5%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .glitch .g-a, .glitch .g-b { display: none; } }
+
+/* ============================================================
+   MÓVIL (hasta 600 px de ancho): todo más pequeño y compacto
+   - Para escalar TODO de golpe, cambia el tamaño de "html" (14.5px).
+   - Si quieres que esto también valga para móviles en horizontal
+     o tablets pequeñas, sube el 600px del @media.
+   ============================================================ */
+@media (max-width: 600px) {
+  html { font-size: 14.5px; scroll-padding-top: 5rem; }
+  :root { --cut: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); }
+
+  /* Cabecera compacta: logo e idioma arriba, menú en una sola fila desplazable */
+  .top {
+    display: grid; grid-template-columns: 1fr auto; grid-template-areas: "logo lang" "nav nav";
+    align-items: center; gap: .3rem .8rem; padding: .55rem 1rem .5rem;
+  }
+  .logo { grid-area: logo; font-size: 1.3rem; }
+  .lang { grid-area: lang; }
+  .lang button { padding: .2rem .5rem; font-size: .7rem; }
+  .top nav {
+    grid-area: nav; margin: 0; flex-wrap: nowrap; gap: 1.1rem; overflow-x: auto; white-space: nowrap;
+    scrollbar-width: none; padding-bottom: .15rem;
+  }
+  .top nav::-webkit-scrollbar { display: none; }
+  .top nav a { flex: 0 0 auto; font-size: .74rem; letter-spacing: .07em; }
+
+  /* Portada */
+  .hero { padding: 2.2rem 1rem; }
+  .badge { padding: .28rem .8rem; font-size: .66rem; letter-spacing: .12em; }
+  .hero h1 { margin-top: 1.1rem; font-size: clamp(1.9rem, 9vw, 2.5rem); }
+  .hero p { margin: 1.1rem 0 1.4rem; font-size: .98rem; }
+  .btn { padding: .65rem 1.2rem; font-size: .8rem; }
+  .stage { margin-top: 2.2rem; }
+  .cube { --s: 84px; }
+
+  /* Secciones y títulos */
+  .section { padding: 2rem 1rem; }
+  h2 { margin-bottom: 1rem; font-size: 1.55rem; }
+  .view-title { gap: .1rem 1.1rem; margin-bottom: .35rem; }
+  .view-hint { margin-bottom: 1rem; font-size: .84rem; }
+  .lead { margin-bottom: 1.1rem; font-size: .98rem; }
+
+  /* Buscador y pestañas */
+  .toolbar { gap: .7rem; margin-bottom: 1.2rem; }
+  #search { width: 100%; padding: .5rem .75rem; font-size: .88rem; }
+  .filter-group { gap: .4rem; }
+  .filters button { padding: .38rem .65rem; font-size: .74rem; letter-spacing: .06em; }
+
+  /* Galería: 2 columnas */
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+  .card-body { padding: .6rem .7rem .75rem; }
+  .card-body h3 { font-size: .95rem; }
+  .meta { font-size: .74rem; }
+  .tag3d, .tagtype { top: .4rem; padding: .1rem .38rem; font-size: .62rem; letter-spacing: .08em; }
+  .tag3d { left: .4rem; }
+  .tagtype { right: .4rem; max-width: 62%; }
+  .more { gap: .7rem; margin-top: 1.4rem; }
+  .count { font-size: .82rem; }
+
+  /* Skins: 3 columnas */
+  .skins-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+  .skin-card { gap: .4rem; padding: .7rem .3rem .6rem; }
+  .skin-preview { height: 108px; }
+  .skin-name { max-width: 100%; font-size: .74rem; overflow-wrap: anywhere; }
+  .skin-ver { padding: .08rem .4rem; font-size: .6rem; }
+
+  /* Servicios, sobre mí y contacto */
+  .services { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+  .services article { padding: .9rem .9rem 1rem; }
+  .services h3 { font-size: .95rem; }
+  .services p { font-size: .84rem; }
+  .about-grid { gap: 1.2rem; }
+  .about-grid p { font-size: .95rem; }
+  .skills { padding: .8rem 1rem; }
+  .skills li { padding: .35rem 0; font-size: .92rem; }
+  .actions { gap: .6rem; }
+  .actions .btn { flex: 1 1 auto; padding: .65rem .9rem; text-align: center; }
+  .actions .btn:first-child { flex-basis: 100%; }
+  .foot { padding: 1.3rem 1rem; }
+  .foot p { font-size: .82rem; }
+
+  /* Ventana del modelo / skin */
+  dialog { width: 96vw; max-height: 90vh; max-height: 90dvh; }
+  .stage3d { aspect-ratio: 4 / 3; max-height: 52vh; }
+  .viewer-media .thumb { aspect-ratio: 4 / 3; }
+  .anim-bar { gap: .35rem; padding: .6rem .7rem; }
+  .anim-bar button, .chip { padding: .35rem .6rem; font-size: .7rem; letter-spacing: .05em; }
+  .viewer-info { padding: .9rem 1rem 1.1rem; }
+  .viewer-info h3 { font-size: 1.1rem; }
+  .viewer-info p { font-size: .92rem; }
+  .viewer-actions { margin-top: .9rem; }
+  .close { top: .5rem; right: .5rem; width: 2rem; height: 2rem; }
+}
+
+/* ============================================================
+   VERSIÓN PARA MÓVILES (pantallas de hasta 640 px)
+   Todo está dentro de este bloque: el ordenador y la tablet no cambian.
+   Lo principal: texto y espacios un ~12 % más pequeños y tarjetas en 2 columnas.
+   ============================================================ */
+@media (max-width: 640px) {
+  :root { --cut: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px)); }
+  html { font-size: 87.5%; scroll-padding-top: 6rem; }   /* 14 px en lugar de 16 px: todo lo que va en rem baja */
+
+  /* Cabecera compacta: logo + idioma arriba, menú deslizable debajo */
+  .top { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; padding: .55rem 1rem; }
+  .logo { order: 1; font-size: 1.3rem; }
+  .lang { order: 2; margin-left: auto; }
+  .lang button { font-size: .72rem; padding: .25rem .55rem; }
+  .top nav {
+    order: 3; flex: 0 0 100%; flex-wrap: nowrap; gap: 1.1rem; margin-left: 0;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .top nav::-webkit-scrollbar { display: none; }
+  .top nav a { font-size: .72rem; letter-spacing: .07em; white-space: nowrap; padding: .3rem 0; }
+
+  /* Portada */
+  .hero { padding: 2rem 1rem 2.2rem; }
+  .badge { font-size: .68rem; padding: .3rem .8rem; letter-spacing: .12em; }
+  .hero h1 { margin-top: 1.1rem; font-size: clamp(1.9rem, 9vw, 2.4rem); }
+  .hero p { margin: 1rem 0 1.4rem; font-size: .98rem; }
+  .stage { margin-top: 2.2rem; }
+  .cube { --s: 78px; }
+  .btn { padding: .65rem 1.2rem; font-size: .78rem; }
+  .actions { gap: .6rem; }
+
+  /* Secciones y títulos */
+  .section { padding: 2.2rem 1rem; }
+  h2 { font-size: 1.6rem; margin-bottom: 1rem; }
+  h3 { font-size: 1.05rem; }
+  .lead { font-size: .98rem; margin-bottom: 1.1rem; }
+  .view-hint { font-size: .82rem; margin-bottom: 1.1rem; }
+  .view-title.single { margin-bottom: 1.1rem; }
+
+  /* Buscador y pestañas */
+  .toolbar { gap: .7rem; margin-bottom: 1.2rem; }
+  .filters, .filter-group { gap: .4rem; }
+  .filters button { font-size: .68rem; padding: .4rem .65rem; letter-spacing: .06em; }
+  #search { width: 100%; font-size: .85rem; padding: .5rem .7rem; }
+
+  /* Galería: 2 columnas */
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+  .card-body { padding: .6rem .7rem .75rem; }
+  .card-body h3 { font-size: .95rem; margin-bottom: .1rem; }
+  .meta { font-size: .72rem; }
+  .tag3d, .tagtype { top: .4rem; padding: .1rem .4rem; font-size: .58rem; letter-spacing: .08em; }
+  .tag3d { left: .4rem; }
+  .tagtype { right: .4rem; }
+  .more { margin-top: 1.5rem; }
+  .count { font-size: .8rem; }
+
+  /* Skins: 3 columnas */
+  .skins-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+  .skin-card { padding: .6rem .3rem .55rem; gap: .35rem; }
+  .skin-preview { height: 108px; }
+  .skin-name { font-size: .72rem; overflow-wrap: anywhere; }
+  .skin-ver { font-size: .56rem; padding: .05rem .35rem; }
+
+  /* Servicios y Sobre mí */
+  .services { gap: .8rem; }
+  .services article { padding: 1rem 1.1rem 1.1rem; }
+  .services p { font-size: .92rem; }
+  .about-grid { gap: 1.2rem; }
+  .about-grid p { font-size: .98rem; }
+  .skills { padding: .8rem 1rem; }
+  .skills li { padding: .35rem 0; font-size: .92rem; }
+
+  /* Pie */
+  .foot { padding: 1.4rem 1rem; }
+  .foot p { font-size: .8rem; }
+
+  /* Visor de modelos y skins */
+  dialog { width: 96vw; max-height: 94vh; }
+  .close { top: .5rem; right: .5rem; width: 2rem; height: 2rem; }
+  .viewer-info { padding: .9rem 1rem 1.1rem; }
+  .viewer-actions { margin-top: .9rem; gap: .4rem; }
+  .anim-bar { padding: .6rem .7rem; gap: .4rem; }
+  .anim-bar button, .chip { font-size: .66rem; padding: .35rem .6rem; letter-spacing: .06em; }
+}
