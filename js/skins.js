@@ -14,11 +14,20 @@ const SKIN_PAGE_SIZE = 12; // cuántas se ven de golpe; "Ver más" añade otras 
 
 const skins = [
   { name: "Meica navideña", file: "skins/Meica.png", version: "clasica",
-    desc: "Skin hecha para Meica." },
+    desc: "" },
 
     { name: "Punkpup", file: "skins/punkpup.png", version: "clasica",
-      desc: "Sustituye este archivo por tu propia skin." },
+      desc: "" },
 
-      { name: "PookyBoo", file: "skins/PookyBoo normal slim.png", version: "slim",
-        desc: "Sustituye este archivo por tu propia skin." }
+  { name: "PookyBoo", file: "skins/PookyBoo normal slim.png", version: "slim",
+        desc: "" },
+
+  { name: "Faeriemisu", file: "skins/Rosalaris slim.png", version: "slim",
+          desc: "" },
+
+  { name: "Ikari Saint", file: "skins/Ikari Saint.png", version: "clasica",
+          desc: "" },
+
+  { name: "RubyRiot", file: "skins/rubyriot.png", version: "clasica",
+            desc: "" },
 ];

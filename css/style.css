@@ -314,7 +314,7 @@ a.chip { display: inline-block; text-decoration: none; }
    - Solo se ven si hay sitio a los lados: nunca se superponen al contenido.
    - Si tu PNG es pixel art, añade la clase "pixel" a su <img> en index.html.
    ============================================================ */
-.deco-proyectos { --deco-w: 260px; --deco-top: 4rem; --deco-opacity: 1; }
+.deco-proyectos { --deco-w: 260px; --deco-top: 4rem; --deco-maxh: 400px; --deco-opacity: 1; }
 .deco-skins     { --deco-w: 400px; --deco-top: 3rem; --deco-maxh: 900px; --deco-x: -32px; --deco-opacity: 1; }
 .deco-sobremi   { --deco-w: 400px; --deco-top: 9rem; --deco-maxh: 640px; --deco-x: 24px; --deco-opacity: 1; }
 
@@ -545,3 +545,4 @@ a.chip { display: inline-block; text-decoration: none; }
   .anim-bar { padding: .6rem .7rem; gap: .4rem; }
   .anim-bar button, .chip { font-size: .66rem; padding: .35rem .6rem; letter-spacing: .06em; }
 }
+.about-text p + p { margin-top: 1rem; }

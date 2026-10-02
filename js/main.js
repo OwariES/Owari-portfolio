@@ -291,6 +291,95 @@ function makeButton(label, pressed) {
   return b;
 }
 
+// Blockbench (con "Export Groups As Armature") guarda las animaciones de los huesos de nivel superior
+// (por ejemplo las piernas) con la posición ABSOLUTA del pivote en lugar de la local, y el hueso acaba
+// desplazado dos veces (las piernas "saltan" hacia arriba). Aquí se detecta y se corrige.
+function fixPivotTracks(model, clips) {
+  let fixed = 0;
+  clips.forEach(clip => clip.tracks.forEach(track => {
+    const dot = track.name.lastIndexOf(".");
+    if (dot < 0 || track.name.slice(dot + 1) !== "position") return;
+    const node = model.getObjectByName(track.name.slice(0, dot));
+    const parent = node && node.parent;
+    if (!parent || node.position.length() > 1e-6 || parent.position.length() < 0.02) return;
+    const v = track.values, n = v.length / 3;
+    const mean = [0, 0, 0];
+    for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) mean[k] += v[i * 3 + k] / n;
+    const dist = p => Math.hypot(mean[0] - p.x, mean[1] - p.y, mean[2] - p.z);
+    if (dist(parent.position) >= dist(node.position)) return;   // ya está en coordenadas locales
+    for (let i = 0; i < n; i++) {
+      v[i * 3] -= parent.position.x;
+      v[i * 3 + 1] -= parent.position.y;
+      v[i * 3 + 2] -= parent.position.z;
+    }
+    fixed++;
+  }));
+  return fixed;
+}
+
+// Reproductor de animaciones de un .gltf (el de los .bbmodel está en js/bbmodel.js)
+function makeMixerPlayer(THREE, model, allClips) {
+  const fixedTracks = fixPivotTracks(model, allClips);
+  const mixer = new THREE.AnimationMixer(model);
+  const clips = allClips.filter(c => c.tracks.length > 0);   // las vacías se ignoran
+  let skinned = false;
+  model.traverse(o => { if (o.isSkinnedMesh) skinned = true; });
+  return {
+    clips: clips.map(c => ({ name: c.name, still: c.duration < 0.001 })),
+    info: {
+      formato: "gltf", esqueleto: skinned, pistasCorregidas: fixedTracks,
+      animaciones: allClips.map(c => ({ nombre: c.name, duracion: +c.duration.toFixed(2), pistas: c.tracks.length }))
+    },
+    play(i) {
+      mixer.stopAllAction();   // siempre parte de la pose base, sin restos de la animación anterior
+      const action = mixer.clipAction(clips[i]);
+      if (clips[i].duration < 0.001) {        // pose estática de un solo fotograma
+        action.setLoop(THREE.LoopOnce, 1);
+        action.clampWhenFinished = true;
+      } else {
+        action.setLoop(THREE.LoopRepeat, Infinity);
+      }
+      action.reset().play();
+    },
+    update(dt) { mixer.update(dt); },
+    setPaused(v) { mixer.timeScale = v ? 0 : 1; }
+  };
+}
+
+// Carga un modelo: .bbmodel (directo desde Blockbench) o .gltf / .glb
+async function loadModel(THREE, GLTFLoader, p) {
+  if (/\.bbmodel(\?.*)?$/i.test(p.model)) {
+    if (typeof BBModel === "undefined") throw new Error('Falta <script src="js/bbmodel.js"> en index.html');
+    return BBModel.load(THREE, p.model, { signs: p.bbSigns });
+  }
+  const gltf = await new GLTFLoader().loadAsync(p.model);
+  const shifted = applySkinOffset(THREE, gltf.scene, p);
+  const loaded = { scene: gltf.scene, player: makeMixerPlayer(THREE, gltf.scene, gltf.animations) };
+  loaded.player.info.skinOffsetAplicado = shifted;
+  return loaded;
+}
+
+// Blockbench, al exportar con "Export Groups As Armature" un modelo de formato Java Block/Item, guarda los vértices
+// de las piezas con esqueleto 8 px (0,5) corridos en X y Z respecto a las piezas sueltas del mismo archivo.
+// En projects.js:  skinOffset: "java"   (o a mano: skinOffset: [x, y, z], en unidades del modelo)
+// Lo más limpio es volver a exportar con esa opción desactivada; esto sirve para los archivos ya exportados.
+function applySkinOffset(THREE, scene, p) {
+  let o = p.skinOffset;
+  if (!o) return 0;
+  if (o === "java") o = [0.5, 0, 0.5];
+  const shift = new THREE.Matrix4().makeTranslation(o[0], o[1], o[2]);
+  const moved = new Set();                       // varias mallas pueden compartir el mismo atributo: se mueve una sola vez
+  scene.traverse(m => {
+    if (!m.isSkinnedMesh) return;
+    const a = m.geometry.attributes.position;
+    if (!moved.has(a)) { moved.add(a); a.applyMatrix4(shift); a.needsUpdate = true; }
+    m.geometry.boundingBox = null; m.geometry.boundingSphere = null;
+    if ("boundingBox" in m) m.boundingBox = null;
+    if ("boundingSphere" in m) m.boundingSphere = null;
+  });
+  return moved.size;
+}
+
 async function show3D(p, token) {
   stop3D();
   const stage = document.createElement("div");
@@ -305,7 +394,7 @@ async function show3D(p, token) {
 
   try {
     const { THREE, GLTFLoader, OrbitControls } = await loadThree();
-    const gltf = await new GLTFLoader().loadAsync(p.model);
+    const loaded = await loadModel(THREE, GLTFLoader, p);
     if (token !== openToken) return; // el visor se cerró mientras cargaba
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -320,7 +409,7 @@ async function show3D(p, token) {
     scene.add(camera);
 
     // Texturas nítidas (pixel art) y recortes limpios
-    const model = gltf.scene;
+    const model = loaded.scene;
     model.traverse(obj => {
       if (!obj.isMesh) return;
       obj.frustumCulled = false; // evita piezas que desaparecen al animarse
@@ -336,18 +425,39 @@ async function show3D(p, token) {
       });
     });
 
-    // Centrar el modelo y encuadrar la cámara
+    // Centrar el modelo y encuadrar la cámara.
+    // La caja abarca todas las animaciones (se recorren una vez), para que nada salga de plano al moverse.
     const box = new THREE.Box3().setFromObject(model);
+    try {
+      (loaded.player.clips || []).forEach((clip, i) => {
+        const T = clip.still ? 0 : (clip.duration > 0 ? clip.duration : 2.5);
+        loaded.player.play(i);
+        for (let k = 0; k <= 12 && T > 0; k++) {
+          loaded.player.update(T / 12);
+          box.union(new THREE.Box3().setFromObject(model));
+        }
+      });
+    } catch (e) { /* si falla el muestreo, se usa la caja de reposo */ }
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
     model.position.sub(center);
     scene.add(model);
 
     const maxDim = Math.max(size.x, size.y, size.z) || 1;
-    const dist = (maxDim / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.7;
+    // Encuadre por esfera: cabe entero desde cualquier ángulo y aprovecha el ancho del visor.
+    // "zoom" en projects.js acerca (2 = el doble de grande) los modelos con colas o alas muy largas.
+    const aspect = stage.clientWidth && stage.clientHeight ? stage.clientWidth / stage.clientHeight : 1.4;
+    const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+    const halfFovH = Math.atan(Math.tan(halfFov) * aspect);
+    // Cabe en ancho y en alto desde cualquier ángulo de giro (el alto cuenta con la inclinación de la cámara)
+    const rH = Math.hypot(size.x, size.z) / 2 || 1;
+    const rV = Math.hypot(size.y / 2, 0.45 * rH);
+    const dist = Math.max(rH / Math.sin(halfFovH), rV / Math.sin(halfFov)) * 1.08 / (p.zoom || 1);
     // Los modelos de Blockbench miran hacia atrás en el visor: se empieza a 180° (cambia con "startAngle" en cada modelo)
     const startAngle = THREE.MathUtils.degToRad(p.startAngle ?? 180);
-    camera.position.set(dist * 0.7, dist * 0.4, dist).applyAxisAngle(new THREE.Vector3(0, 1, 0), startAngle);
+    const longX = size.x > size.z * 1.5;   // modelo alargado de lado: se ve de perfil al abrirlo
+    const dir = longX ? [0.2, 0.3, 0.93] : [0.54, 0.31, 0.78];
+    camera.position.set(dist * dir[0], dist * dir[1], dist * dir[2]).applyAxisAngle(new THREE.Vector3(0, 1, 0), startAngle);
     sun.position.set(0.4, 0.7, 1).multiplyScalar(dist);
     camera.near = dist / 100;
     camera.far = dist * 100;
@@ -359,38 +469,25 @@ async function show3D(p, token) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.autoRotate = true;
+    controls.autoRotate = p.autoRotate !== false;   // autoRotate: false en projects.js lo deja quieto
     controls.autoRotateSpeed = 1.5;
-    controls.minDistance = dist * 0.3;
-    controls.maxDistance = dist * 3;
+    controls.minDistance = dist * 0.12;
+    controls.maxDistance = dist * 4;
 
-    // Animaciones: se detectan solas desde el archivo
-    const mixer = new THREE.AnimationMixer(model);
-    const clips = gltf.animations.filter(c => c.tracks.length > 0); // las vacías se ignoran
-    let skinned = false;
-    model.traverse(o => { if (o.isSkinnedMesh) skinned = true; });
-    console.info("[Owari 3D]", p.model, {
-      animaciones: gltf.animations.map(c => ({ nombre: c.name, duracion: +c.duration.toFixed(2), pistas: c.tracks.length })),
-      esqueleto: skinned,
-      tamano: size.toArray().map(n => +n.toFixed(2))
-    });
+    // Animaciones: se detectan solas desde el archivo (.bbmodel o .gltf)
+    const player = loaded.player;
+    const clips = player.clips;
+    console.info("[Owari 3D]", p.model, { ...player.info, tamano: size.toArray().map(n => +n.toFixed(2)) });
     const buttons = [];
 
     function play(i) {
-      mixer.stopAllAction(); // siempre parte de la pose base, sin restos de la animación anterior
-      const action = mixer.clipAction(clips[i]);
-      if (clips[i].duration < 0.001) {        // pose estática de un solo fotograma
-        action.setLoop(THREE.LoopOnce, 1);
-        action.clampWhenFinished = true;
-      } else {
-        action.setLoop(THREE.LoopRepeat, Infinity);
-      }
-      action.reset().play();
+      player.play(i);
       buttons.forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
     }
 
     clips.forEach((clip, i) => {
       const b = makeButton(clip.name || "Animación " + (i + 1), false);
+      if (clip.still) b.title = "Esta animación solo tiene un fotograma: se ve como pose fija";
       b.addEventListener("click", () => play(i));
       bar.appendChild(b);
       buttons.push(b);
@@ -411,10 +508,10 @@ async function show3D(p, token) {
     const pauseBtn = makeButton("Pausar");
     pauseBtn.addEventListener("click", () => {
       paused = !paused;
-      mixer.timeScale = paused ? 0 : 1;
+      player.setPaused(paused);
       pauseBtn.textContent = paused ? "Reproducir" : "Pausar";
     });
-    const rotBtn = makeButton("Girar", true);
+    const rotBtn = makeButton("Girar", p.autoRotate !== false);
     rotBtn.addEventListener("click", () => {
       controls.autoRotate = !controls.autoRotate;
       rotBtn.setAttribute("aria-pressed", String(controls.autoRotate));
@@ -445,7 +542,7 @@ async function show3D(p, token) {
     const state = { raf: 0, renderer, controls, ro };
     const tick = () => {
       state.raf = requestAnimationFrame(tick);
-      mixer.update(clock.getDelta());
+      player.update(clock.getDelta());
       controls.update();
       renderer.render(scene, camera);
     };

@@ -17,22 +17,51 @@ const CATEGORIES = ["Diosesmon", "Before the Embers", "Adventures & Companions",
 const PAGE_SIZE = 8;
 
 const projects = [
-  { title: "Blink", category: "Adventures & Companions", type: "Entidades", tool: "Java",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
+  { title: "Blink", category: "Adventures & Companions", type: "Entidades", tool: "Java + Geckolib",
+    desc: "",
     img: "img/blink_icon.png", model: "models/pets/Blink.gltf" },
+
   { title: "Jack", category: "Adventures & Companions", type: "Entidades", tool: "Java",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
+    desc: "",
     img: "img/jack_icon.png", model: "models/pets/Jack.gltf" },
+
   { title: "Jorge", category: "Adventures & Companions", type: "Entidades", tool: "Java",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
+    desc: "",
     img: "img/jorge_icon.png", model: "models/pets/jorge.gltf" },
+
   { title: "Sizi", category: "Adventures & Companions", type: "Entidades", tool: "Java",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
+    desc: "",
     img: "img/sizi_icon.png", model: "models/pets/Sizi.gltf" },
+
   { title: "Sting", category: "Adventures & Companions", type: "Entidades", tool: "Java",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
+    desc: "",
     img: "img/sting_icon.png", model: "models/pets/sting.gltf" },
-  { title: "Modelo de ejemplo 6", category: "Proyectos propios", type: "Armas", tool: "Bedrock · textura 64×32",
-    desc: "Describe aquí el modelo, tu rol en el proyecto y las herramientas usadas.",
-    img: "", model: "models/tools/espada_dragones.gltf" }
+
+  { title: "Darkrai bow", category: "Diosesmon", type: "Herramientas", tool: "Java",
+    desc: "Un arco realizado para el servidor Diosesmon, inspirado en el pokemon Darkrai.",
+    img: "img/darkrai_bow.png", model: "models/tools/darkrai.gltf" },
+
+  { title: "Nimbro dragon", category: "Adventures & Companions", type: "Entidades", tool: "Java",
+      desc: "Animaciones realizada para el mod Adventures & Companions (el modelado y el texturizado no me pertenece).",
+      img: "img/dragon_nimbo_icon.png", model: "models/dragon.gltf", zoom: 1.6 },
+
+  { title: "Darkrai armor", category: "Diosesmon", type: "Armaduras", tool: "Java + Geckolib",
+        desc: "Armadura realizada para el servidor Diosesmon, inspirada en el pokemon Darkrai",
+        img: "img/Darkrai armor.png", model: "models/armors/Darkrai armor.gltf"},
+
+    { title: "Hoshi", category: "Adventures & Companions", type: "Entidades", tool: "Java + Geckolib",
+          desc: "",
+          img: "img/hoshi_icon.png", model: "models/pets/hoshi.gltf"},
+
+  { title: "Banner Brisalia", category: "Proyectos propios", type: "Bloques", tool: "Java",
+            desc: "Estandarte realizado para servidor privado.",
+            img: "img/banner suelo.png", model: "models/blocks/banner suelo.gltf"},
+
+  { title: "Rayquaza sword", category: "Diosesmon", type: "Armas", tool: "Java",
+              desc: "Espada basada en el pokemon Rayquaza para el servidor de Diosesmon.",
+              img: "img/rayquaza.png", model: "models/tools/rayquaza.gltf", skinOffset: "java"},
+
+  { title: "Megalodon", category: "Before the Embers", type: "Entidades", tool: "Java + Geckolib",
+                desc: "",
+                img: "img/Megalodon.png", model: "models/entities/Megalodon.gltf"},
 ];
